@@ -1,7 +1,7 @@
 // Import necessary AWS SDK, cryptographic modules, and jsonwebtoken for JWT generation.
 import { DynamoDBDocumentClient, GetCommand } from '@aws-sdk/lib-dynamodb';
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
-import { pbkdf2Sync } from 'crypto';
+import { randomBytes, pbkdf2Sync } from 'crypto';
 import jwt from 'jsonwebtoken';
 
 // Initialize the DynamoDB Document Client for easier interaction with DynamoDB.
@@ -43,7 +43,7 @@ export async function handler(event) {
         }
 
         // Password verification.
-        const [hashFunction, iterations, salt, hash] = Item.hashedPassword.split(':');
+        const [algorithm, hashFunction, iterations, salt, hash] = Item.hashedPassword.split(':');
         const derivedHash = pbkdf2Sync(password, salt, parseInt(iterations), 64, hashFunction).toString('hex');
         if (hash !== derivedHash) {
             return {
