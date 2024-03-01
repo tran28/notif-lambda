@@ -30,19 +30,27 @@ jobs:
           cd shared
           npm install
           cd ..
-          
+
       - name: Package and deploy ${{ matrix.function }}
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: ${{ secrets.AWS_REGION }}
         run: |
+          # Setup the packaging directory
           mkdir package
           cp -R shared/node_modules package/
           cp functions/${{ matrix.function }}/index.mjs package/index.mjs
           
+          # Verify contents before zipping
+          echo "Listing package contents before zipping:"
+          ls -al package
+          
+          # Zip the deployment package
           zip -r package.zip package/*
           
+          # Deploy to AWS Lambda
           aws lambda update-function-code --function-name ${{ matrix.function }} --zip-file fileb://package.zip
           
+          # Cleanup
           rm -rf package package.zip

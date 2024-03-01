@@ -37,7 +37,7 @@ export async function handler(event) {
         if (!Item) {
             return {
                 statusCode: 404,
-                body: JSON.stringify({ message: "User not found. Test auto deploy" }),
+                body: JSON.stringify({ message: "User not found. Test 2" }),
                 headers: { "Access-Control-Allow-Origin": "*" }
             };
         }
