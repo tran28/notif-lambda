@@ -37,7 +37,7 @@ export async function handler(event) {
         if (!Item) {
             return {
                 statusCode: 404,
-                body: JSON.stringify({ message: "User not found. Testing speed." }),
+                body: JSON.stringify({ message: "User not found." }),
                 headers: { "Access-Control-Allow-Origin": "*" }
             };
         }
