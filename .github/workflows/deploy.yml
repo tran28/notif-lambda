@@ -6,7 +6,7 @@ on:
       - main
 
 jobs:
-  deploy:
+  setup-and-deploy:
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -18,39 +18,42 @@ jobs:
           - UserLoginLambda
           - UserRegistrationLambda
     steps:
-      - uses: actions/checkout@v2
+    - uses: actions/checkout@v2
       
-      - name: Setup Node.js
-        uses: actions/setup-node@v2
-        with:
-          node-version: '20'
+    - name: Setup Node.js
+      uses: actions/setup-node@v2
+      with:
+        node-version: '20'
 
-      - name: Install shared dependencies
-        run: |
-          cd shared
-          npm install
-          cd ..
+    - name: Install shared dependencies
+      run: |
+        npm install --prefix shared
 
-      - name: Package and deploy ${{ matrix.function }}
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: ${{ secrets.AWS_REGION }}
-        run: |
-          # Setup the packaging directory
-          mkdir package
-          cp -R shared/node_modules package/
-          cp functions/${{ matrix.function }}/index.mjs package/index.mjs
-          
-          # Verify contents before zipping
-          echo "Listing package contents before zipping:"
-          ls -al package
-          
-          # Zip the deployment package
-          zip -r package.zip package/*
-          
-          # Deploy to AWS Lambda
-          aws lambda update-function-code --function-name ${{ matrix.function }} --zip-file fileb://package.zip
-          
-          # Cleanup
-          rm -rf package package.zip
+    - name: Prepare and deploy each function
+      run: |
+        FUNCTION_DIR=functions/${{ matrix.function }}
+        DEPLOYMENT_DIR=deployment/${{ matrix.function }}
+        
+        # Create deployment directory
+        mkdir -p $DEPLOYMENT_DIR
+        
+        # Copy function-specific file
+        cp $FUNCTION_DIR/index.mjs $DEPLOYMENT_DIR/
+        
+        # Copy node_modules
+        cp -r shared/node_modules $DEPLOYMENT_DIR/
+        
+        # Zip the deployment package
+        cd $DEPLOYMENT_DIR
+        zip -r ../../$FUNCTION_DIR/function.zip .
+        
+        # Deploy to AWS Lambda (ensure AWS CLI v2 is used)
+        aws lambda update-function-code --function-name ${{ matrix.function }} --zip-file fileb://$FUNCTION_DIR/function.zip
+        
+        # Cleanup
+        cd ../../
+        rm -rf $DEPLOYMENT_DIR
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        AWS_REGION: ${{ secrets.AWS_REGION }}
