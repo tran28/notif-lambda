@@ -6,7 +6,7 @@ import jwt from 'jsonwebtoken';
 const dynamoDbClient = new DynamoDBClient({});
 const docClient = DynamoDBDocumentClient.from(dynamoDbClient);
 const tableName = 'UserProducts'; // DynamoDB table name.
-const jwtSecret = '5QGYWAkti8UoLDMzzOvgH_1KDLamwM8gGjRyI71CyYOKL_A02TjmZ5tmu3dfZbyz'; // Secret key for JWT verification.
+const jwtSecret = process.env.JWT_SECRET;
 
 /**
  * Lambda function to authenticate a user via JWT and retrieve their associated products.

@@ -12,7 +12,7 @@ const snsClient = new SNSClient({});
 
 // Specify the DynamoDB table name and JWT secret key.
 const tableName = 'UserProducts';
-const jwtSecret = '5QGYWAkti8UoLDMzzOvgH_1KDLamwM8gGjRyI71CyYOKL_A02TjmZ5tmu3dfZbyz';
+const jwtSecret = process.env.JWT_SECRET;
 
 /**
  * Lambda function handler for user registration.
