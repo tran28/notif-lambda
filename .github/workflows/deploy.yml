@@ -18,43 +18,55 @@ jobs:
           - UserLoginLambda
           - UserRegistrationLambda
     steps:
-      - uses: actions/checkout@v2
+    - uses: actions/checkout@v2
       
-      - name: Setup Node.js
-        uses: actions/setup-node@v2
-        with:
-          node-version: '20'
+    - name: Setup Node.js
+      uses: actions/setup-node@v2
+      with:
+        node-version: '20'
 
-      - name: Install shared dependencies
-        run: |
-          npm install --prefix shared
-          
-      - name: Package and deploy ${{ matrix.function }}
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: ${{ secrets.AWS_REGION }}
-        run: |
-          FUNCTION_NAME=${{ matrix.function }}
-          FUNCTION_DIR=functions/$FUNCTION_NAME
-          DEPLOYMENT_DIR=deployment/$FUNCTION_NAME
-          
-          # Create a deployment directory for the function
-          mkdir -p $DEPLOYMENT_DIR/node_modules
-          
-          # Copy the function's index.mjs to the deployment directory
-          cp $FUNCTION_DIR/index.mjs $DEPLOYMENT_DIR/
-          
-          # Copy shared node_modules to the function's deployment directory
-          cp -R shared/node_modules $DEPLOYMENT_DIR/
-          
-          # Change to the deployment directory and zip its contents
-          cd $DEPLOYMENT_DIR
-          zip -r ../../$FUNCTION_NAME.zip .
-          
-          # Deploy to AWS Lambda using the created zip file
-          aws lambda update-function-code --function-name $FUNCTION_NAME --zip-file fileb://$FUNCTION_NAME.zip
-          
-          # Cleanup the deployment directory after the function has been deployed
-          cd ../..
-          rm -rf $DEPLOYMENT_DIR
+    - name: Install AWS CLI v2
+      run: |
+        curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+        unzip awscliv2.zip
+        sudo ./aws/install
+
+    - name: Install shared dependencies
+      run: |
+        npm install --prefix shared
+
+    - name: Package and deploy ${{ matrix.function }}
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        AWS_REGION: ${{ secrets.AWS_REGION }}
+      run: |
+        FUNCTION_NAME=${{ matrix.function }}
+        FUNCTION_DIR=functions/$FUNCTION_NAME
+        DEPLOYMENT_DIR=deployment/$FUNCTION_NAME
+        
+        # Create a deployment directory for the function
+        mkdir -p $DEPLOYMENT_DIR/node_modules
+        
+        # Copy the function's index.mjs to the deployment directory
+        cp $FUNCTION_DIR/index.mjs $DEPLOYMENT_DIR/
+        
+        # Copy shared node_modules to the function's deployment directory
+        cp -R shared/node_modules $DEPLOYMENT_DIR/
+        
+        # Change to the deployment directory and zip its contents
+        cd $DEPLOYMENT_DIR
+        zip -r ../../$FUNCTION_NAME.zip .
+        
+        # List zip contents for verification
+        echo "Listing ZIP contents for verification:"
+        unzip -l ../../$FUNCTION_NAME.zip
+        
+        # Deploy to AWS Lambda using the created zip file with verbose logging
+        echo "Deploying $FUNCTION_NAME to AWS Lambda:"
+        aws lambda update-function-code --function-name $FUNCTION_NAME --zip-file fileb://../../$FUNCTION_NAME.zip --debug
+        
+        # Cleanup the deployment directory after the function has been deployed
+        echo "Cleaning up..."
+        cd ../..
+        rm -rf $DEPLOYMENT_DIR
