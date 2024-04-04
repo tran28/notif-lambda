@@ -1,16 +1,17 @@
- // Import necessary modules and packages.
-import { Pool } from 'pg';
+// Import necessary modules and packages.
+import pkg from 'pg';
 import jwt from 'jsonwebtoken';
 import { randomBytes, pbkdf2Sync } from 'crypto';
 import { SNSClient, CreateSMSSandboxPhoneNumberCommand } from '@aws-sdk/client-sns';
 
 // Initialize the PostgreSQL client pool for database interactions.
+const { Pool } = pkg;
 const pool = new Pool({
-  user: process.env.RDS_USERNAME,
-  host: process.env.RDS_HOST,
-  database: process.env.RDS_DATABASE,
-  password: process.env.RDS_PASSWORD,
-  port: parseInt(process.env.RDS_PORT, 10),
+    user: process.env.RDS_USERNAME,
+    host: process.env.RDS_HOST,
+    database: process.env.RDS_DATABASE,
+    password: process.env.RDS_PASSWORD,
+    port: parseInt(process.env.RDS_PORT, 10),
 });
 
 // Initialize the Amazon SNS client for notification services.
