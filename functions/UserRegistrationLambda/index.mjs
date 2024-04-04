@@ -12,6 +12,9 @@ const pool = new Pool({
     database: process.env.RDS_DATABASE,
     password: process.env.RDS_PASSWORD,
     port: parseInt(process.env.RDS_PORT, 10),
+    ssl: {
+        rejectUnauthorized: false,
+    }
 });
 
 // Initialize the Amazon SNS client for notification services.
