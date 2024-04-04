@@ -12,6 +12,7 @@
   "dependencies": {
     "@aws-sdk/client-dynamodb": "^3.525.0",
     "@aws-sdk/lib-dynamodb": "^3.525.0",
-    "jsonwebtoken": "^9.0.2"
+    "jsonwebtoken": "^9.0.2",
+    "pg": "^8.11.5"
   }
 }
