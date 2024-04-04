@@ -1,4 +1,5 @@
  // Import necessary modules and packages.
+import { Pool } from 'pg';
 import jwt from 'jsonwebtoken';
 import { randomBytes, pbkdf2Sync } from 'crypto';
 import { SNSClient, CreateSMSSandboxPhoneNumberCommand } from '@aws-sdk/client-sns';
