@@ -49,6 +49,9 @@ jobs:
           
           # Copy shared node_modules to the function's deployment directory
           cp -R shared/node_modules $DEPLOYMENT_DIR/
+
+          # Copy the SSL certificate to the deployment directory
+          cp $CERTS_DIR/us-east-1-bundle.pem $DEPLOYMENT_DIR/
           
           # Change to the deployment directory and zip its contents
           cd $DEPLOYMENT_DIR

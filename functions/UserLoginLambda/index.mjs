@@ -2,6 +2,13 @@
 import pkg from 'pg';
 import jwt from 'jsonwebtoken';
 import { pbkdf2Sync } from 'crypto';
+import { readFileSync } from 'fs';
+import { join } from 'path';
+
+// Construct the path to the certificate file included in the deployment package
+const sslCertPath = join(process.env.LAMBDA_TASK_ROOT || __dirname, 'us-east-1-bundle.pem');
+// Read the certificate file
+const sslCertContent = readFileSync(sslCertPath);
 
 // Reuse the PostgreSQL client pool setup for database interactions.
 const { Pool } = pkg;
@@ -12,7 +19,8 @@ const pool = new Pool({
     password: process.env.RDS_PASSWORD,
     port: parseInt(process.env.RDS_PORT, 10),
     ssl: {
-        rejectUnauthorized: false, // Note: For development/testing only.
+        rejectUnauthorized: true, // Should always be true in production
+        ca: sslCertContent.toString(),
     }
 });
 
@@ -36,7 +44,7 @@ export async function handler(event) {
         // Retrieve user information from PostgreSQL.
         const userQuery = 'SELECT email, hashed_password FROM users WHERE email = $1';
         const res = await client.query(userQuery, [email]);
-        
+
         if (res.rows.length === 0) {
             // User not found.
             return {

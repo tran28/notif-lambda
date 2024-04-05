@@ -3,6 +3,13 @@ import pkg from 'pg';
 import jwt from 'jsonwebtoken';
 import { randomBytes, pbkdf2Sync } from 'crypto';
 import { SNSClient, CreateSMSSandboxPhoneNumberCommand } from '@aws-sdk/client-sns';
+import { readFileSync } from 'fs';
+import { join } from 'path';
+
+// Construct the path to the certificate file included in the deployment package
+const sslCertPath = join(process.env.LAMBDA_TASK_ROOT || __dirname, 'us-east-1-bundle.pem');
+// Read the certificate file
+const sslCertContent = readFileSync(sslCertPath);
 
 // Initialize the PostgreSQL client pool for database interactions.
 const { Pool } = pkg;
@@ -13,7 +20,8 @@ const pool = new Pool({
     password: process.env.RDS_PASSWORD,
     port: parseInt(process.env.RDS_PORT, 10),
     ssl: {
-        rejectUnauthorized: false, // Note: For development/testing only.
+        rejectUnauthorized: true, // Should always be true in production
+        ca: sslCertContent.toString(),
     }
 });
 
