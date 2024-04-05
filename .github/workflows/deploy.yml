@@ -40,6 +40,7 @@ jobs:
           FUNCTION_NAME=${{ matrix.function }}
           FUNCTION_DIR=functions/$FUNCTION_NAME
           DEPLOYMENT_DIR=deployment/$FUNCTION_NAME
+          CERTS_DIR=certs
           
           # Create a deployment directory for the function
           mkdir -p $DEPLOYMENT_DIR/node_modules
